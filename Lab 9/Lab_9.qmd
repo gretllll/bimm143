@@ -1,0 +1,287 @@
+---
+title: "Lab 9"
+author: "Gretel Warmuth (PID: A17595945)"
+format: pdf
+---
+
+## Introduction to the RCSB Protein Data Bank (PDB)
+
+Analyzing the Protein Data Bank (PDB):
+
+from: https://www.rcsb.org/stats/summary#
+
+```{r}
+pdbdb <- read.csv("Data Export Summary.csv")
+pdbdb
+```
+
+> Q1: What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy.
+
+```{r}
+pdbdb$Total
+```
+
+Removing the commas to convert to numeric values:
+
+```{r}
+as.numeric(sub(",", "", pdbdb$Total))
+```
+
+Turning into a function to be able to use later:
+
+```{r}
+x <- pdbdb$Total 
+as.numeric(sub(",", "", x))
+```
+
+```{r}
+comma2numeric <- function(x) {
+  as.numeric(sub(",", "", x))
+}
+```
+
+```{r}
+comma2numeric(pdbdb$X.ray)
+```
+
+```{r}
+apply(pdbdb, 2, comma2numeric)
+```
+
+Or use an import function:
+
+```{r}
+library(readr)
+pdbdb <- read_csv("Data Export Summary.csv")
+```
+
+```{r}
+sum(pdbdb$Total)
+```
+
+Percent structures by X-ray and electron microscopy:
+
+```{r}
+sum(pdbdb$`X-ray`)/sum(pdbdb$Total) * 100
+```
+
+```{r}
+sum(pdbdb$EM)/sum(pdbdb$Total) * 100
+```
+
+> Q2: What proportion of structures in the PDB are protein?
+
+```{r}
+pdbdb$Total[1]/sum(pdbdb$Total) * 100
+```
+
+> Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+
+## Visualizing the HIV-1 protease structure
+
+Mol(molstar) is a web-based molecular viewer that we will need to learn the basics of:
+
+https://molstar.org/viewer/
+
+Using PDB code 1HSG
+
+> Q4: Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure?
+
+The one "atom" is representing each water molecule interacting with the protein.
+
+> Q5: There is a critical “conserved” water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have
+
+Asp25
+
+> Q6: Generate and save a figure clearly showing the two distinct chains of HIV-protease along with the ligand. You might also consider showing the catalytic residues ASP 25 in each chain and the critical water (we recommend “Ball & Stick” for these side-chains). Add this figure to your Quarto document.
+
+![1HSG Protein](1HSG.png)
+
+![Aspartate Components](1HSG2.png)
+
+
+![Surface of Protein](1HSG1.png)
+
+> Discussion Topic: Can you think of a way in which indinavir, or even larger ligands and substrates, could enter the binding site?
+
+Ligands and substrates can enter the binding site when the protein is in the correct conformation and can allow binding.
+
+## Introduction to Bio3D in R
+
+bio3D allows fofr structural and bioninformatics work.
+
+reading PDB files in bio3D:
+
+```{r}
+library(bio3d)
+
+pdb <- read.pdb("1hsg")
+pdb
+```
+
+```{r}
+attributes(pdb)
+```
+
+```{r}
+head(pdb$atom)
+```
+
+```{r}
+pdbseq(pdb)[25]
+```
+
+> Q7: How many amino acid residues are there in this pdb object? 
+
+```{r}
+sum(pdb$calpha)
+```
+
+
+> Q8: Name one of the two non-protein residues? 
+
+HOH and KM1
+
+> Q9: How many protein chains are in this structure? 
+
+2
+
+```{r}
+unique(pdb$atom$chain)
+```
+
+Predicting functional motions of a single structure: 
+
+```{r}
+adk <- read.pdb("6s36")
+adk
+```
+
+```{r}
+# Perform flexiblity prediction
+m <- nma(adk)
+
+plot(m)
+```
+
+Write out multi-model PDB file that can be used to make an animation of the predicted motions:
+
+```{r}
+mktrj(m, file="adk_m7.pdb")
+```
+
+This file can be opened in Mol*
+
+## Comparitive Analysis of Protein Structure
+
+```{r}
+library(bio3d)
+```
+
+Analyzing all ADK structures in the PDB database, starting with "1ake_A"
+
+```{r}
+id <- "1ake_A"
+aa <- get.seq(id)
+aa
+```
+
+> Q10. Which of the packages above is found only on BioConductor and not CRAN? 
+
+The `msa` package
+
+> Q11. Which of the above packages is not found on BioConductor or CRAN?: 
+
+N/A
+
+> Q12. True or False? Functions from the devtools package can be used to install packages from GitHub and BitBucket? 
+
+N/A
+
+Packages installed:
+
+install.packages("BiocManager")
+BiocManager::install("msa")
+
+> Q13. How many amino acids are in this sequence, i.e. how long is this sequence?
+
+```{r}
+length(aa)
+```
+
+```{r}
+attributes(aa)
+```
+
+```{r}
+ncol(aa$ali)
+```
+
+Finding related sequences:
+
+```{r}
+b <- blast.pdb(aa)
+```
+
+```{r}
+hits <- plot(b)
+```
+
+```{r}
+hits$pdb.id
+```
+
+Downloading files:
+
+```{r}
+# Download releated PDB files
+files <- get.pdb(hits$pdb.id, path="pdbs", split=TRUE, gzip=TRUE)
+```
+
+Using the `pdbaln` function to align the found sequences:
+
+```{r}
+pdbs <- pdbaln(files, fit = TRUE, exefile="msa")
+```
+
+```{r}
+pdbs
+```
+
+## Principal Component Analysis
+
+```{r}
+# Perform PCA
+pc.xray <- pca(pdbs)
+plot(pc.xray)
+```
+
+Making an animatino of these results:
+
+```{r}
+# Visualize first principal component
+pc1 <- mktrj(pc.xray, pc=1, file="pc_1.pdb")
+pc1
+```
+
+```{r}
+pc.xray <- pca(pdbs)
+```
+
+
+```{r}
+plot(pc.xray, pc.axes = c(1,2))
+```
+
+Percent of protein pdb sequences compared to uniprot sequences: 
+
+```{r}
+uniprot <- 248838887
+pdb <- 195610
+pdb/uniprot * 100
+```
+
+
+
+
+
