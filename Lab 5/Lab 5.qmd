@@ -1,0 +1,231 @@
+---
+title: "Lab 5: Data Viz with ggplot"
+author: "Gretel Warmuth (PID: A17595945)"
+format: pdf
+---
+
+## Plotting in R
+
+R has lots of ways to make plots and figures. This includes so-called **base** graphics and packages like **ggplot2**
+
+```{r}
+plot(cars)
+```
+
+
+This is a **base** R plot of the in-build `cars` dataset that has only two columns:
+
+```{r}
+head(cars)
+```
+
+
+>Q. How would we plot this dataset with **ggplot2**
+
+All ggplotfigures have at least three layers:
+
+-**data**
+-**aes** (how the data map to the plot)
+-**geoms** (how we draw the data, lines, points, etc.)
+
+Before I use any new package I need to download and install it with the `install.packages()` command.
+
+I never use `inatall.packages()` within my quarto document otherwise I will install the package over and over and over again - which is silly!
+
+Once a package is installed I can load it up with the `library()` function.
+
+
+```{r}
+# install.packages("ggplot2")
+library(ggplot2)
+ggplot(cars) +
+  aes(x=speed, y=dist) +
+  geom_point()
+```
+
+
+**Key-point:** For simple plots (like the one above) ggplot is more verbose (we need to do more typing) but as plots get more complicated ggplot starts to be more clear and simple than base R plot()
+
+```{r}
+p<- ggplot(cars) +
+  aes(speed, dist) +
+  geom_point() + 
+  geom_smooth(method = "lm", se=FALSE) +
+  labs(title="Stopping Distance of Old Cars" , subtitle= "From the In-built Cars Dataset") +
+  theme_bw()
+```
+
+## Adding More Plot Aesthetics
+```{r}
+url <- "https://bioboot.github.io/bimm143_S20/class-material/up_down_expression.txt"
+genes <- read.delim(url)
+head(genes)
+```
+>Q: How many genes are in this dataset?
+
+```{r}
+nrow(genes)
+```
+
+>Q: How many columns are there and what are their names?
+
+```{r}
+ncol(genes)
+colnames(genes)
+```
+
+>Q: How many upregulated genes are there?
+
+```{r}
+table(genes$State)
+```
+
+
+>Q: What fraction of total genes is upregulated?
+
+```{r}
+round( table(genes$State)/nrow(genes), 2)
+```
+
+
+A first plot:
+
+```{r}
+p <- ggplot(genes) +
+  aes(Condition1, Condition2, col=State) +
+  geom_point() +
+  theme_bw() +
+  scale_color_manual( values=c("blue", "grey", "red"))
+
+
+```
+
+```{r}
+p + theme_bw() +
+  labs(title= "Gene Expression Changes Upon Drug Treatment")
+```
+
+
+## Going Further
+
+Playing with aesthetics (from data concerning the relationship between population size and life expectancy in each continent in 2007):
+
+```{r}
+# File location online
+url <- "https://raw.githubusercontent.com/jennybc/gapminder/master/inst/extdata/gapminder.tsv"
+
+gapminder <- read.delim(url)
+```
+
+
+Point size and color (based on population size and continent):
+
+```{r}
+# install.packages("dplyr")  ## un-comment to install if needed
+library(dplyr)
+
+gapminder_2007 <- gapminder %>% filter(year==2007)
+ggplot(gapminder_2007) +
+  aes(x=gdpPercap, y=lifeExp, color=continent, size=pop) +
+  geom_point(alpha=0.5) +
+  scale_size_area(max_size= 10)
+```
+
+Different organization by color:
+
+```{r}
+ggplot(gapminder_2007) +
+  aes(x= gdpPercap, y= lifeExp, color=pop) +
+  geom_point(alpha= 0.8)
+```
+
+Different organization by size:
+
+```{r}
+ggplot(gapminder_2007) +
+  aes(x= gdpPercap, y=lifeExp, size=pop) +
+  geom_point(alpha= 0.5)
+scale_size_area(max_size= 10)
+```
+
+Scatterplot for 1957: 
+```{r}
+# install.packages("dplyr")  ## un-comment to install if needed
+library(dplyr)
+
+gapminder_1957 <- gapminder %>% filter(year==1957)
+ggplot(gapminder_1957) +
+  aes(x= gdpPercap, y=lifeExp, color= continent, size= pop) +
+  geom_point(alpha= 0.7) +
+  scale_size_area(max_size= 15)
+```
+
+
+Comparing 1957 to 2007:
+
+```{r}
+gapminder_1957 <- gapminder %>% filter(year==1957 | year==2007)
+
+ggplot(gapminder_1957) + 
+  geom_point(aes(x = gdpPercap, y = lifeExp, color=continent,
+                 size = pop), alpha=0.7) + 
+  scale_size_area(max_size = 10) +
+  facet_wrap(~year)
+```
+
+>Q: How many years are in this dataset?
+
+```{r}
+length(gapminder$year)
+```
+
+
+```{r}
+table(gapminder$year)
+```
+
+
+```{r}
+length(unique(gapminder$year))
+```
+
+```{r}
+library(dplyr)
+```
+
+>Q: Extract data for US in 1992
+
+```{r}
+filter(gapminder, country=="United States", year=="1992")
+```
+>Q: What is the population and life expectancy of Ireland for the last year on ecord?
+
+```{r}
+library(dplyr)
+filter(gapminder, country=="Ireland", year== 2007)
+```
+
+>Q: What countries in data set had pop smaller than Ireland in 2007?
+
+```{r}
+filter(gapminder, pop< 4109086, year== 2007)
+```
+
+
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this 
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).

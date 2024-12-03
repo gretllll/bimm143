@@ -1,0 +1,220 @@
+---
+title: "Lab 7"
+author: "Gretel Warmuth (PID: A17595945)"
+format: pdf
+---
+
+Today we are going to learn how to apply different machne learning methods, beginning with clustering:
+
+The goal is to find groups/clusters in the input data.
+
+First I will make some random data with clear groups with the `rnorm()` function:
+
+```{r}
+hist(rnorm(1000, mean=3))
+```
+
+
+Making a histogram with two peaks:
+
+```{r}
+n <- 30
+x <- (c(rnorm(n, -3), rnorm(n, +3)))
+hist(x)
+```
+
+Making a cluster plot: 
+
+```{r}
+n <- 30
+x <- (c(rnorm(n, -3), rnorm(n, +3)))
+y <- rev(x)
+
+z<- cbind(x,y)
+head(z)
+```
+
+
+```{r}
+plot(z)
+```
+
+Use the `kmeans()` function setting k to 2 and nstart=20
+
+Inspect/print the results
+
+> Q. How many points are in each cluster?
+
+> Q. What ‘component’ of your result object details
+ - cluster size?
+ - cluster assignment/membership?
+ - cluster center?
+
+> Q. Plot x colored by the kmeans cluster assignment and
+ add cluster centers as blue points
+
+```{r}
+km <- kmeans(z, centers = 2)
+km
+```
+
+Results of the object `km`
+```{r}
+attributes(km)
+```
+
+
+Cluster size:
+
+```{r}
+km$size
+```
+
+Cluster assignment/membership:
+```{r}
+km$cluster
+```
+
+Cluster center:
+
+```{r}
+km$centers
+```
+
+
+Plot:
+
+```{r}
+plot(z, col="blue")
+```
+
+R will recycle the shorter color vector to be the same length as the longer (number of data points) in z
+
+```{r}
+plot(z, col=c("red", "blue"))
+
+```
+
+Coloring the clusters: 
+
+```{r}
+plot(z, col=km$cluster)
+```
+
+We can use the `points()` function to add new points to an existing plot like for te cluster centers:
+
+```{r}
+plot(z, col=km$cluster)
+points(km$centers, col="blue", pch=16, cex=1.5)
+```
+
+> Q. Run km again and ask for 4 clusters and plot them 
+
+```{r}
+n <- 30
+x <- (c(rnorm(n, -3), rnorm(n, +3)))
+y <- rev(x)
+
+z<- cbind(x,y)
+km4 <- kmeans(z, centers = 4)
+plot(z, col = km4$cluster)
+points(km4$centers, col="blue", pch=16, cex=1.5)
+```
+
+
+## Hierarchical Clustering
+
+Let's take our same made-up data `z` and see how hclust works.
+
+First we make a distance matrix of our data to be clustered:
+
+```{r}
+d <- dist(z)
+hc <- hclust(d)
+hc
+```
+
+
+
+```{r}
+plot(hc)
+abline(h=8, col="red")
+```
+
+I can get my cluster membership vector by "cutting the tree" with the `cutree()` function:
+
+```{r}
+grps <- cutree(hc, h=8)
+grps
+```
+
+Can you plot `z` colored by our hclust results:
+
+```{r}
+plot(z, col=grps)
+```
+
+
+## PCA of UK Food Data
+
+Read data from the UK on food consumption in different areas
+
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url, row.names = 1)
+head(x)
+```
+
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+```
+
+```{r}
+barplot(as.matrix(x), beside=F, col=rainbow(nrow(x)))
+```
+
+A so-called pair-wise plot may help to compare countries and categories
+
+```{r}
+pairs(x, col=rainbow(10), pch=16)
+```
+
+It is difficult to see structure and trends in this small dataset- how can we compare when we have even larger data?! PCA to the rescue!
+
+### PCA
+
+The main function in base R to do PCA is called `prcomp()`
+
+```{r}
+pca <- prcomp(t(x))
+summary(pca)
+```
+
+
+Let's look at the `pca` object that we created from running `prcomp()`
+
+```{r}
+attributes(pca)
+```
+
+
+```{r}
+pca$x
+```
+
+The PCA plot:
+
+```{r}
+plot(pca$x[,1], pca$x[,2], 
+     col=c("black", "red", "blue", "darkgreen"), pch=16,
+     xlab="PC1 (67.4%)", ylab="PC2 (29%)")
+```
+
+Bar plot:
+
+```{r}
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,1], las=2 )
+```
+

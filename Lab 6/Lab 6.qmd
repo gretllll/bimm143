@@ -1,0 +1,244 @@
+---
+title: "Lab 6: R Functions"
+author: Gretel Warmuth (PID A17595945)
+format: pdf
+---
+
+Today we are going to explore R functions and begin to think about writting our own functions. 
+
+
+Let's write our first function to add numbers.
+
+Every function in R has at least 3 things:
+?plot
+- a **name** (we pick this)
+- one or more inputs- **arguments**
+- the **body** (where the work happens)
+
+```{r}
+add <- function(x, y=1, z=0) {
+  x + y + z
+}
+```
+
+Let's try it
+
+```{r}
+add(x=c(10, 1, 1, 10), y=1)
+```
+
+```{r}
+add(10)
+add(10, 10)
+add(10, 10, 10)
+```
+
+```{r}
+# mean( c(10, 10, NA) na.rm = T)
+```
+
+
+## Lab Sheet Work
+> Q1. Write a function grade() to determine an overall grade from a vector of student homework assignment scores dropping the lowest single score. If a student misses a homework (i.e. has an NA value) this can be used as a score to be potentially dropped. Your final function should be adquately explained with code comments and be able to work on an example class gradebook such as this one in CSV format: “https://tinyurl.com/gradeinput”
+
+```{r}
+# Example input vectors to start with
+student1 <- c(100, 100, 100, 100, 100, 100, 100, 90)
+student2 <- c(100, NA, 90, 90, 90, 90, 97, 80)
+student3 <- c(90, NA, NA, NA, NA, NA, NA, NA)
+```
+
+
+Calculating the average of student1:
+```{r}
+student1
+mean(student1)
+```
+
+
+Calculating the average on student2:
+```{r}
+student2
+mean(student2)
+```
+
+Creating a mean for student2:
+```{r}
+mean(student2, na.rm = T)
+```
+
+Calculating the average for student3:
+```{r}
+student3
+mean(student3)
+mean(student3, na.rm = T)
+```
+
+We need to calculate an average for all students where their lowest score is neglected and "NA"s count as 0s.
+
+
+```{r}
+student1
+student1[-8]
+
+```
+
+The `min()` function can help us find the lowest score
+```{r}
+min(student1)
+```
+
+I need to find the location of the minimum value, not the value itself. I can use `which.min()`
+
+```{r}
+student1
+which.min(student1)
+```
+
+Put it together to create a new average
+
+```{r}
+which.min(student1)
+student1[-8]
+student1[-which.min(student1)]
+mean(student1[-which.min(student1)])
+```
+
+```{r}
+min.ind <- which.min(student1)
+mean(student1[-min.ind])
+```
+
+We could make all NA values equal to 0
+
+```{r}
+x <- student2
+x 
+x[2] <- 0
+x
+```
+
+```{r}
+x <- student2
+x
+x[is.na(x)] = 0
+x
+```
+
+We've found a woking snippet:
+
+```{r}
+## Find NAs in `x` and make them 0
+x <- student3
+x[is.na(x)] <- 0
+
+## Finds the mininmum value and rm's it before getting mean
+mean(student1[-which.min(student1)])
+mean(x[-which.min(x)])
+```
+
+Lets make it into a function:
+
+```{r}
+grade <- function(x) {
+  x[is.na(x)] <- 0
+  mean(x[-which.min(x)])
+}
+```
+
+For each student:
+```{r}
+grade(student1)
+grade(student2)
+grade(student3)
+```
+
+Now `apply()` to our class gradebook
+```{r}
+gradebook <- read.csv("https://tinyurl.com/gradeinput",
+                      row.names = 1)
+head(gradebook)
+```
+
+To use the `apply()` function on this `gradebook` dataset I need to decide whether I want to "apply" the `grade()` function over the rows or columns of the `gradebook`
+
+```{r}
+ans <- apply(gradebook, 1, grade)
+ans
+```
+
+> Q2. Using your grade() function and the supplied gradebook, Who is the top scoring student overall in the gradebook?
+
+```{r}
+which.max(ans)
+ans[which.max(ans)]
+```
+
+> Q3. From your analysis of the gradebook, which homework was toughest on students (i.e. obtained the lowest scores overall?
+
+```{r}
+apply(gradebook, 2, grade)
+```
+
+```{r}
+apply(gradebook, 2, mean, na.rm = T)
+```
+
+
+```{r}
+masked_gradebook <- gradebook
+masked_gradebook[is.na(masked_gradebook)] = 0
+masked_gradebook
+apply(masked_gradebook, 2, mean)
+```
+
+I could modifty the `grade()` function to do this too- i.e not drop the lowest option
+
+```{r}
+grade2 <- function(x, drop.low= TRUE) {
+  x[is.na(x)] <- 0
+  
+  if(drop.low) {
+    cat("Hello Low")
+    out <-  mean(x[-which.min(x)])
+  } else {
+  out <- mean(x)
+  cat("No Low") 
+  }
+  return(out)
+}
+grade2(student1, TRUE)
+```
+
+
+> Q4. Optional Extension: From your analysis of the gradebook, which homework was most
+predictive of overall score (i.e. highest correlation with average grade score)?
+
+The function to look at correlations is called `cor()`
+
+```{r}
+x <- c(100, 90, 80, 100)
+y <- c(100, 90, 80, 100)
+z <- c(80, 90, 100, 10)
+
+cor(x,y)
+cor(x,z)
+```
+
+
+```{r}
+cor(ans, gradebook$hw1)
+cor(ans, masked_gradebook$hw1)
+cor(ans, masked_gradebook$hw2)
+cor(ans, masked_gradebook$hw3)
+cor(ans, masked_gradebook$hw4)
+cor(ans, masked_gradebook$hw5)
+```
+
+I want to `apply()` the `cor()` function ove the `masked_gradebook` and use the `ans` scores for the class 
+```{r}
+apply(masked_gradebook, 2, cor, y = ans)
+apply(masked_gradebook, 2, cor, ans)[which.max(apply(masked_gradebook, 2, cor, ans))]
+```
+
+
