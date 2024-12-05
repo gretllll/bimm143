@@ -1,7 +1,7 @@
 ---
 title: "Lab 6: R Functions"
 author: Gretel Warmuth (PID A17595945)
-format: pdf
+format: gfm
 ---
 
 Today we are going to explore R functions and begin to think about writting our own functions. 
