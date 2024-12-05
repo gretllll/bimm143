@@ -1,7 +1,7 @@
 ---
 title: "Lab 10"
 author: "Gretel Warmuth (PID: A17595945)"
-format: pdf
+format: gfm
 ---
 
 ## Importing candy data
