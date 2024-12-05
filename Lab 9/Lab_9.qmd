@@ -1,7 +1,7 @@
 ---
 title: "Lab 9"
 author: "Gretel Warmuth (PID: A17595945)"
-format: pdf
+format: gfm
 ---
 
 ## Introduction to the RCSB Protein Data Bank (PDB)
