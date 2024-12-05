@@ -1,7 +1,7 @@
 ---
 title: "Lab 7"
 author: "Gretel Warmuth (PID: A17595945)"
-format: pdf
+format: gfm
 ---
 
 Today we are going to learn how to apply different machne learning methods, beginning with clustering:
