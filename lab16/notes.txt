@@ -1,0 +1,13 @@
+This is a simple text editor called nano. 
+
+Some key unix cmds so far:
+
+pwd: print working directory
+cd: change direction
+ls: list out files
+mkdir: make a new folder
+nano: a basic text editor
+
+ssh -i "~/Downloads/bimm143_gwarmuth.pem" ubuntu@ec2-52-24-113-172.us-west-2.compute.amazonaws.com
+
+scp -i "~/Downloads/bimm143_gwarmuth.pem" ubuntu@ec2-52-24-113-172.us-west-2.compute.amazonaws.com:~/work/mm-second.x.zebrafish.tsv myresults.tsv
