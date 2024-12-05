@@ -8,7 +8,7 @@ classwork for [bimm143](https://bioboot.github.io/bimm143_F24/midterm/) f24 at U
 - Class 9 [Halloween candy mini project](https://github.com/gretllll/bimm143/blob/main/Lab%209/Lab_9.pdf)
 - Class 10 [Protein structure](https://github.com/gretllll/bimm143/blob/main/Lab%2010/lab-10.pdf)
 - Class 11 []()
-- Class 12 []()
+- Class 12 [Genome Informatics](https://github.com/gretllll/bimm143/blob/main/lab12/lab12.md)
 - Class 13 []()
 - Class 14 []()
 - Class 15 []()
